@@ -1,0 +1,12 @@
+C:\Users\Saturn\source\repos\CourseWork\CourseWork\bin\Debug\CourseWork.exe.config
+C:\Users\Saturn\source\repos\CourseWork\CourseWork\bin\Debug\CourseWork.exe
+C:\Users\Saturn\source\repos\CourseWork\CourseWork\bin\Debug\CourseWork.pdb
+C:\Users\Saturn\source\repos\CourseWork\CourseWork\bin\Debug\System.IO.Ports.dll
+C:\Users\Saturn\source\repos\CourseWork\CourseWork\bin\Debug\System.IO.Ports.xml
+C:\Users\Saturn\source\repos\CourseWork\CourseWork\obj\Debug\CourseWork.csprojAssemblyReference.cache
+C:\Users\Saturn\source\repos\CourseWork\CourseWork\obj\Debug\CourseWork.Form1.resources
+C:\Users\Saturn\source\repos\CourseWork\CourseWork\obj\Debug\CourseWork.Properties.Resources.resources
+C:\Users\Saturn\source\repos\CourseWork\CourseWork\obj\Debug\CourseWork.csproj.GenerateResource.cache
+C:\Users\Saturn\source\repos\CourseWork\CourseWork\obj\Debug\CourseWork.csproj.CopyComplete
+C:\Users\Saturn\source\repos\CourseWork\CourseWork\obj\Debug\CourseWork.exe
+C:\Users\Saturn\source\repos\CourseWork\CourseWork\obj\Debug\CourseWork.pdb
