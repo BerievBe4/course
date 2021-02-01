@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.IO.Ports;
 using System.Threading;
+using System.IO;
 
 namespace CourseWork
 {
@@ -17,10 +18,17 @@ namespace CourseWork
         public Form1()
         {
             InitializeComponent();
+
+        }
+
+        private void graphItem_Click(object sender, EventArgs e)
+        {
+            
         }
 
         bool isConnected = false;
         static SerialPort serialPort = new SerialPort();
+        bool isReading = false;
 
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
@@ -55,29 +63,71 @@ namespace CourseWork
         {
             if (!isConnected)
             {
+                isReading = !isReading;
                 isConnected = true;
                 string selectedPort = comboBox1.GetItemText(comboBox1.SelectedItem);
                 serialPort.PortName = selectedPort;
-                serialPort.ReadTimeout = 1000;
                 serialPort.Open();
                 button1.Text = "Отсоединиться";
+                int y = 50;
+                int i = 0;
+                string str;
+                int res;
+                bool write;
+                OpenFileDialog ofd = new OpenFileDialog();
 
+                ofd.Filter = "Text files(*.txt) | *.txt";
 
-                try
+                if (ofd.ShowDialog() == DialogResult.OK)
                 {
-                    textBox1.Text = serialPort.ReadLine();
-                }
-                catch
-                {
+                    write = true;
+                    using (FileStream theFile = new FileStream(ofd.FileName, FileMode.Create, FileAccess.Write))
+                    {
+                        using (StreamWriter sw = new StreamWriter(theFile))
 
+                        {
+
+                            sw.WriteLine("Результаты работы программы:");
+
+                        }
+
+                    }
                 }
+                else
+                    write = false;
+                string filename = ofd.FileName;
+
+                while (isReading)
+                {
+                    str = serialPort.ReadLine();
+                    str = str.Replace(".00\r", "");
+                    res = Int32.Parse(str);
+                    if (write)
+                    {
+                        using (FileStream theFile = new FileStream(ofd.FileName, FileMode.Append, FileAccess.Write))
+                        {
+                            using (StreamWriter sw = new StreamWriter(theFile))
+
+                            {
+
+                                sw.WriteLine(res);
+
+                            }
+
+                        }
+                    }
+                    chart1.Series[0].Points.AddXY(i++, res);
+                    chart1.Update();
+                    chart1.ChartAreas[0].AxisX.Maximum = i + 25;
+                    chart1.ChartAreas[0].AxisX.Minimum = i - 25;
+                }
+
                 
             }
             else
             {
                 isConnected = false;
                 serialPort.Close();
-                textBox1.Text = "";
             }
         }
     }
