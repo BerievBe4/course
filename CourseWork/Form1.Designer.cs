@@ -135,6 +135,7 @@
             title2.Text = "1";
             title2.Visible = false;
             this.chart2.Titles.Add(title2);
+            this.chart2.Click += new System.EventHandler(this.chart2_Click);
             // 
             // label2
             // 

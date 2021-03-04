@@ -73,6 +73,7 @@ namespace CourseWork
                 button1.Text = "Отсоединиться";
                 bool first = true;
                 int i = 0;
+                int j = 0;
                 string str;
                 int res;
                 long currentTime = 0;
@@ -93,7 +94,7 @@ namespace CourseWork
 
                         {
 
-                            sw.WriteLine("Результаты работы программы:");
+                            sw.WriteLine("Давление Производная");
 
                         }
 
@@ -102,8 +103,10 @@ namespace CourseWork
                 else
                     write = false;
                 string filename = ofd.FileName;
-                chart2.ChartAreas[0].AxisY.Maximum = 10;
-                chart2.ChartAreas[0].AxisY.Minimum = -10;
+                chart1.ChartAreas[0].AxisY.Maximum = 120;
+                chart1.ChartAreas[0].AxisY.Minimum = 80;
+                chart2.ChartAreas[0].AxisY.Maximum = 6;
+                chart2.ChartAreas[0].AxisY.Minimum = -6;
 
                 if (!String.IsNullOrEmpty(textBox1.Text))
                 {
@@ -127,21 +130,6 @@ namespace CourseWork
                                 floatres /= 1024;
                                 floatres *= 1000 / 90 * 7.5;
                                 prevRes = floatres;
-                                Thread.Sleep(200);
-                                if (write)
-                                {
-                                    using (FileStream theFile = new FileStream(ofd.FileName, FileMode.Append, FileAccess.Write))
-                                    {
-                                        using (StreamWriter sw = new StreamWriter(theFile))
-
-                                        {
-
-                                            sw.WriteLine(floatres);
-
-                                        }
-
-                                    }
-                                }
                                 chart1.Series[0].Points.AddXY(i++, floatres);
                                 chart1.ChartAreas[0].AxisX.Maximum = i + 25;
                                 chart1.ChartAreas[0].AxisX.Minimum = i - 25;
@@ -152,53 +140,64 @@ namespace CourseWork
                     }
                     else
                     {
-                        stopwatch.Stop();
+                        
                         var time = stopwatch.ElapsedMilliseconds;
-                        if (maxTime != Int32.MaxValue)
+                        if (serialPort.BytesToRead > 1)
                         {
-                            currentTime += stopwatch.ElapsedMilliseconds / 1000;
-                        }
-                        str = serialPort.ReadExisting();
-                        stopwatch.Start();
-                        var n = str.IndexOf("\r");
-                        if (!string.IsNullOrEmpty(str) && n > 0)
-                        {
-                            str = str.Substring(0, n);
-                            if (!string.IsNullOrEmpty(str))
+                            str = serialPort.ReadExisting();
+                            var n = str.IndexOf("\r");
+                            if (!string.IsNullOrEmpty(str) && n > 0)
                             {
-                                res = Int32.Parse(str);
-                                floatres = res * 5;
-                                floatres /= 1024;
-                                floatres *= 1000 / 90 * 7.5;
-                                Thread.Sleep(200);
-                                if (write)
+                                str = str.Substring(0, n);
+                                if (!string.IsNullOrEmpty(str))
                                 {
-                                    using (FileStream theFile = new FileStream(ofd.FileName, FileMode.Append, FileAccess.Write))
+                                    stopwatch.Stop();
+                                    if (maxTime != Int32.MaxValue)
                                     {
-                                        using (StreamWriter sw = new StreamWriter(theFile))
+                                        currentTime += stopwatch.ElapsedMilliseconds / 1000;
+                                    }
+                                    res = Int32.Parse(str);
+                                    floatres = res * 5;
+                                    floatres /= 1024;
+                                    floatres *= 1000 / 90 * 7.5;
 
+                                    if (floatres >= 80 && floatres <= 120)
+                                    {
+
+
+                                        chart1.Series[0].Points.AddXY(i++, floatres);
+                                        chart1.ChartAreas[0].AxisX.Maximum = i + 25;
+                                        chart1.ChartAreas[0].AxisX.Minimum = i - 25;
+                                        chart1.Update();
+
+
+
+
+                                        chart2.Series[0].Points.AddXY(j++, (floatres - prevRes) / (stopwatch.ElapsedMilliseconds / 1000.00));
+                                        chart2.ChartAreas[0].AxisX.Maximum = j + 25;
+                                        chart2.ChartAreas[0].AxisX.Minimum = j - 25;
+                                        chart2.Update();
+
+                                        if (write)
                                         {
+                                            using (FileStream theFile = new FileStream(ofd.FileName, FileMode.Append, FileAccess.Write))
+                                            {
+                                                using (StreamWriter sw = new StreamWriter(theFile))
 
-                                            sw.WriteLine(floatres);
+                                                {
+                                                    sw.WriteLine();
+                                                    sw.Write(floatres + " ");
+                                                    sw.Write((floatres - prevRes) / stopwatch.ElapsedMilliseconds / 1000.00 + " ");
 
+                                                }
+
+                                            }
                                         }
 
+                                        prevRes = floatres;
+                                        stopwatch.Start();
                                     }
                                 }
-                                chart1.Series[0].Points.AddXY(i++, floatres);
-                                chart1.ChartAreas[0].AxisX.Maximum = i + 25;
-                                chart1.ChartAreas[0].AxisX.Minimum = i - 25;
-                                chart1.Update();
-
-
-
-
-                                chart2.Series[0].Points.AddXY(i++, (floatres - prevRes) / time);
-                                chart2.ChartAreas[0].AxisX.Maximum = i + 25;
-                                chart2.ChartAreas[0].AxisX.Minimum = i - 25;
-                                chart2.Update();
-
-                                prevRes = floatres;
                             }
                         }
                             
@@ -213,6 +212,11 @@ namespace CourseWork
                 isConnected = false;
                 serialPort.Close();
             }
+        }
+
+        private void chart2_Click(object sender, EventArgs e)
+        {
+
         }
     }
 }
