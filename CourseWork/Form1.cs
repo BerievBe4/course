@@ -98,8 +98,14 @@ namespace CourseWork
                 string filename = ofd.FileName;
                 chart1.ChartAreas[0].AxisY.Maximum = 120;
                 chart1.ChartAreas[0].AxisY.Minimum = 80;
+                chart1.ChartAreas[0].AxisX.Maximum = i + 25;
+                chart1.ChartAreas[0].AxisX.Minimum = i - 25;
                 chart2.ChartAreas[0].AxisY.Maximum = 6;
                 chart2.ChartAreas[0].AxisY.Minimum = -6;
+                chart2.ChartAreas[0].AxisX.Maximum = j + 25;
+                chart2.ChartAreas[0].AxisX.Minimum = j - 25;
+                chart2.SuppressExceptions = true;
+
 
                 if (!String.IsNullOrEmpty(textBox1.Text))
                 {
@@ -137,18 +143,17 @@ namespace CourseWork
                                         if (floatres >= 80 && floatres <= 120)
                                         {
 
-
-                                            chart1.Series[0].Points.AddXY(i++, floatres);
                                             chart1.ChartAreas[0].AxisX.Maximum = i + 25;
                                             chart1.ChartAreas[0].AxisX.Minimum = i - 25;
+                                            chart1.Series[0].Points.AddXY(i++, floatres);
                                             chart1.Update();
 
 
                                             if (!first)
                                             {
-                                                chart2.Series[0].Points.AddXY(j++, (floatres - prevRes) / (stopwatch.ElapsedMilliseconds / 1000.00));
                                                 chart2.ChartAreas[0].AxisX.Maximum = j + 25;
                                                 chart2.ChartAreas[0].AxisX.Minimum = j - 25;
+                                                chart2.Series[0].Points.AddXY(j++, (floatres - prevRes) / (stopwatch.ElapsedMilliseconds / 1000.00));
                                                 chart2.Update();
                                             }
 
@@ -156,10 +161,10 @@ namespace CourseWork
 
                                             prevRes = floatres;
                                             stopwatch.Start();
+                                            first = false;
                                         }
                                     }
-                                }
-                                first = false;
+                                }                                
                             }
                         }
                     }
