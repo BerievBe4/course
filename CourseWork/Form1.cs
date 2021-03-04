@@ -72,12 +72,10 @@ namespace CourseWork
                 serialPort.Open();
                 button1.Text = "Отсоединиться";
                 bool first = true;
-                int i = 0;
-                int j = 0;
+                int i = 0, j = 0;
                 string str;
                 int res;
                 long currentTime = 0;
-                bool write;
                 double prevRes = 0;
                 double floatres;
                 OpenFileDialog ofd = new OpenFileDialog();
@@ -87,21 +85,16 @@ namespace CourseWork
 
                 if (ofd.ShowDialog() == DialogResult.OK)
                 {
-                    write = true;
                     using (FileStream theFile = new FileStream(ofd.FileName, FileMode.Create, FileAccess.Write))
                     {
                         using (StreamWriter sw = new StreamWriter(theFile))
 
                         {
-
                             sw.WriteLine("Давление Производная");
-
                         }
 
                     }
                 }
-                else
-                    write = false;
                 string filename = ofd.FileName;
                 chart1.ChartAreas[0].AxisY.Maximum = 120;
                 chart1.ChartAreas[0].AxisY.Minimum = 80;
@@ -113,99 +106,65 @@ namespace CourseWork
                     maxTime = Int32.Parse(textBox1.Text);
                 }
 
-                while (isReading && (currentTime < maxTime))
+
+                using (FileStream theFile = new FileStream(ofd.FileName, FileMode.Append, FileAccess.Write))
                 {
-                    if (first)
+                    using (StreamWriter sw = new StreamWriter(theFile))
                     {
-                        str = serialPort.ReadExisting();
-                        stopwatch.Start();
-                        var n = str.IndexOf("\r");
-                        if (!string.IsNullOrEmpty(str) && n > 0)
+                        while (isReading && (currentTime < maxTime))
                         {
-                            str = str.Substring(0, n);
-                            if (!string.IsNullOrEmpty(str))
+
+                            var time = stopwatch.ElapsedMilliseconds;
+                            if (serialPort.BytesToRead > 1)
                             {
-                                res = Int32.Parse(str);
-                                floatres = res * 5;
-                                floatres /= 1024;
-                                floatres *= 1000 / 90 * 7.5;
-                                prevRes = floatres;
-                                chart1.Series[0].Points.AddXY(i++, floatres);
-                                chart1.ChartAreas[0].AxisX.Maximum = i + 25;
-                                chart1.ChartAreas[0].AxisX.Minimum = i - 25;
-                                chart1.Update();
-                            }
-                        }
-                        first = false;                      
-                    }
-                    else
-                    {
-                        
-                        var time = stopwatch.ElapsedMilliseconds;
-                        if (serialPort.BytesToRead > 1)
-                        {
-                            str = serialPort.ReadExisting();
-                            var n = str.IndexOf("\r");
-                            if (!string.IsNullOrEmpty(str) && n > 0)
-                            {
-                                str = str.Substring(0, n);
-                                if (!string.IsNullOrEmpty(str))
+                                str = serialPort.ReadExisting();
+                                var n = str.IndexOf("\r");
+                                if (!string.IsNullOrEmpty(str) && n > 0)
                                 {
-                                    stopwatch.Stop();
-                                    if (maxTime != Int32.MaxValue)
+                                    str = str.Substring(0, n);
+                                    if (!string.IsNullOrEmpty(str))
                                     {
-                                        currentTime += stopwatch.ElapsedMilliseconds / 1000;
-                                    }
-                                    res = Int32.Parse(str);
-                                    floatres = res * 5;
-                                    floatres /= 1024;
-                                    floatres *= 1000 / 90 * 7.5;
-
-                                    if (floatres >= 80 && floatres <= 120)
-                                    {
-
-
-                                        chart1.Series[0].Points.AddXY(i++, floatres);
-                                        chart1.ChartAreas[0].AxisX.Maximum = i + 25;
-                                        chart1.ChartAreas[0].AxisX.Minimum = i - 25;
-                                        chart1.Update();
-
-
-
-
-                                        chart2.Series[0].Points.AddXY(j++, (floatres - prevRes) / (stopwatch.ElapsedMilliseconds / 1000.00));
-                                        chart2.ChartAreas[0].AxisX.Maximum = j + 25;
-                                        chart2.ChartAreas[0].AxisX.Minimum = j - 25;
-                                        chart2.Update();
-
-                                        if (write)
+                                        stopwatch.Stop();
+                                        if (maxTime != Int32.MaxValue)
                                         {
-                                            using (FileStream theFile = new FileStream(ofd.FileName, FileMode.Append, FileAccess.Write))
-                                            {
-                                                using (StreamWriter sw = new StreamWriter(theFile))
-
-                                                {
-                                                    sw.WriteLine();
-                                                    sw.Write(floatres + " ");
-                                                    sw.Write((floatres - prevRes) / stopwatch.ElapsedMilliseconds / 1000.00 + " ");
-
-                                                }
-
-                                            }
+                                            currentTime += stopwatch.ElapsedMilliseconds / 1000;
                                         }
+                                        res = Int32.Parse(str);
+                                        floatres = res * 5;
+                                        floatres /= 1024;
+                                        floatres *= 1000 / 90 * 7.5;
 
-                                        prevRes = floatres;
-                                        stopwatch.Start();
+                                        if (floatres >= 80 && floatres <= 120)
+                                        {
+
+
+                                            chart1.Series[0].Points.AddXY(i++, floatres);
+                                            chart1.ChartAreas[0].AxisX.Maximum = i + 25;
+                                            chart1.ChartAreas[0].AxisX.Minimum = i - 25;
+                                            chart1.Update();
+
+
+                                            if (!first)
+                                            {
+                                                chart2.Series[0].Points.AddXY(j++, (floatres - prevRes) / (stopwatch.ElapsedMilliseconds / 1000.00));
+                                                chart2.ChartAreas[0].AxisX.Maximum = j + 25;
+                                                chart2.ChartAreas[0].AxisX.Minimum = j - 25;
+                                                chart2.Update();
+                                            }
+
+                                            sw.WriteLine(floatres + " " + (floatres - prevRes) / stopwatch.ElapsedMilliseconds / 1000.00);
+
+                                            prevRes = floatres;
+                                            stopwatch.Start();
+                                        }
                                     }
                                 }
+                                first = false;
                             }
                         }
-                            
-                        first = false;
                     }
-                }
 
-                
+                }
             }
             else
             {
