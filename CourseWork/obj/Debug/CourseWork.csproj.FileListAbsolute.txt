@@ -9,3 +9,4 @@ C:\Users\Saturn\source\repos\CourseWork\CourseWork\obj\Debug\CourseWork.csproj.G
 C:\Users\Saturn\source\repos\CourseWork\CourseWork\obj\Debug\CourseWork.csproj.CopyComplete
 C:\Users\Saturn\source\repos\CourseWork\CourseWork\obj\Debug\CourseWork.exe
 C:\Users\Saturn\source\repos\CourseWork\CourseWork\obj\Debug\CourseWork.pdb
+C:\Users\Saturn\source\repos\CourseWork\CourseWork\obj\Debug\CourseWork.csprojAssemblyReference.cache

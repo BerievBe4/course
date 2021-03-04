@@ -11,6 +11,7 @@ using System.IO.Ports;
 using System.Threading;
 using System.IO;
 using System.Diagnostics;
+using System.Windows.Forms.DataVisualization.Charting;
 
 namespace CourseWork
 {
@@ -48,6 +49,7 @@ namespace CourseWork
         bool isConnected = false;
         static SerialPort serialPort = new SerialPort();
         bool isReading = false;
+        static string PathToFile = null;
 
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
@@ -58,6 +60,38 @@ namespace CourseWork
 
         private void button2_Click(object sender, EventArgs e)
         {
+        }
+
+        private static void DataReceivedHandler(object sender, SerialDataReceivedEventArgs e)
+        {
+            SerialPort sp = (SerialPort)sender;
+            string indata = sp.ReadExisting();
+
+            var str = serialPort.ReadExisting();
+            var n = str.IndexOf("\r");
+            if (!string.IsNullOrEmpty(str) && n > 0)
+            {
+                str = str.Substring(0, n);
+                if (!string.IsNullOrEmpty(str))
+                {
+                    var res = Int32.Parse(str);
+                    double floatres = res * 5;
+                    floatres /= 1024;
+                    floatres *= 1000 / 90 * 7.5;
+
+                    if (floatres >= 80 && floatres <= 120)
+                    {
+                        using (FileStream theFile = new FileStream(PathToFile, FileMode.Append, FileAccess.Write))
+                        {
+                            using (StreamWriter sw = new StreamWriter(theFile))
+
+                            {
+                                sw.WriteLine(floatres.ToString());
+                            }
+                        }
+                    }
+                }
+            }
         }
 
         private void button1_Click(object sender, EventArgs e)
@@ -71,13 +105,8 @@ namespace CourseWork
                 serialPort.PortName = selectedPort;
                 serialPort.Open();
                 button1.Text = "Отсоединиться";
-                bool first = true;
                 int i = 0, j = 0;
-                string str;
-                int res;
                 long currentTime = 0;
-                double prevRes = 0;
-                double floatres;
                 OpenFileDialog ofd = new OpenFileDialog();
 
                 ofd.Filter = "Text files(*.txt) | *.txt";
@@ -95,7 +124,7 @@ namespace CourseWork
 
                     }
                 }
-                string filename = ofd.FileName;
+                PathToFile = ofd.FileName;
                 chart1.ChartAreas[0].AxisY.Maximum = 120;
                 chart1.ChartAreas[0].AxisY.Minimum = 80;
                 chart1.ChartAreas[0].AxisX.Maximum = i + 25;
@@ -111,64 +140,10 @@ namespace CourseWork
                 {
                     maxTime = Int32.Parse(textBox1.Text);
                 }
+                serialPort.DataReceived += new SerialDataReceivedEventHandler(DataReceivedHandler);
 
-
-                using (FileStream theFile = new FileStream(ofd.FileName, FileMode.Append, FileAccess.Write))
-                {
-                    using (StreamWriter sw = new StreamWriter(theFile))
-                    {
-                        while (isReading && (currentTime < maxTime))
-                        {
-
-                            var time = stopwatch.ElapsedMilliseconds;
-                            if (serialPort.BytesToRead > 1)
-                            {
-                                str = serialPort.ReadExisting();
-                                var n = str.IndexOf("\r");
-                                if (!string.IsNullOrEmpty(str) && n > 0)
-                                {
-                                    str = str.Substring(0, n);
-                                    if (!string.IsNullOrEmpty(str))
-                                    {
-                                        stopwatch.Stop();
-                                        if (maxTime != Int32.MaxValue)
-                                        {
-                                            currentTime += stopwatch.ElapsedMilliseconds / 1000;
-                                        }
-                                        res = Int32.Parse(str);
-                                        floatres = res * 5;
-                                        floatres /= 1024;
-                                        floatres *= 1000 / 90 * 7.5;
-
-                                        if (floatres >= 80 && floatres <= 120)
-                                        {
-
-                                            chart1.ChartAreas[0].AxisX.Maximum = i + 25;
-                                            chart1.ChartAreas[0].AxisX.Minimum = i - 25;
-                                            chart1.Series[0].Points.AddXY(i++, floatres);
-                                            chart1.Update();
-
-
-                                            if (!first)
-                                            {
-                                                chart2.ChartAreas[0].AxisX.Maximum = j + 25;
-                                                chart2.ChartAreas[0].AxisX.Minimum = j - 25;
-                                                chart2.Series[0].Points.AddXY(j++, (floatres - prevRes) / (stopwatch.ElapsedMilliseconds / 1000.00));
-                                                chart2.Update();
-                                            }
-
-                                            sw.WriteLine(floatres + " " + (floatres - prevRes) / stopwatch.ElapsedMilliseconds / 1000.00);
-
-                                            prevRes = floatres;
-                                            stopwatch.Start();
-                                            first = false;
-                                        }
-                                    }
-                                }                                
-                            }
-                        }
-                    }
-
+                while (isReading && (currentTime < maxTime))
+                {                  
                 }
             }
             else
